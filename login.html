@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Greenhouse Admin - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      height: 100vh;
+      width: 100vw;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background-color: #ffffff;
+      overflow: hidden;
+    }
+
+    /* Left Side - Plants Image Container */
+    .bg-side {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .bg-side img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: left center;
+    }
+
+    /* Right Side - Form Container */
+    .form-side {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start; /* Changed from center to push content toward the top */
+      align-items: center;
+      padding: 40px 40px 40px 40px; /* Added 60px top padding for spacing from screen top */
+      background-color: #ffffff;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    /* Logo Styling */
+    .logo-container {
+      text-align: center;
+      margin-bottom: 20px; /* Reduced bottom margin to bring form closer to logo */
+    }
+
+    .logo-container img {
+      max-width: 250px;
+      height: auto;
+    }
+
+    .login-box {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .login-box h2 {
+      color: #1a3622;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .login-box p.subtitle {
+      color: #666666;
+      font-size: 13.5px;
+      line-height: 1.45;
+      margin-bottom: 24px;
+    }
+
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 16px 20px;
+      background-color: #ededed;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #333;
+      letter-spacing: 1px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .login-box input::placeholder {
+      color: #555555;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .login-box input:focus {
+      background-color: #ffffff;
+      border-color: #2b5435;
+      box-shadow: 0 0 0 3px rgba(43, 84, 53, 0.15);
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 16px;
+      margin-top: 6px;
+      background-color: #2b5435;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .login-box button:hover {
+      background-color: #1f3d27;
+    }
+
+    .login-box button:active {
+      transform: scale(0.99);
+    }
+
+    .error {
+      color: #d32f2f;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 12px;
+      min-height: 18px;
+    }
+
+    @media (max-width: 850px) {
+      body {
+        grid-template-columns: 1fr;
+      }
+      .bg-side {
+        display: none;
+      }
+      .form-side {
+        padding-top: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Left Side Background Image -->
+  <div class="bg-side">
+    <img src="img/bg.png" alt="Greenhouse Background">
+  </div>
+
+  <!-- Right Side Form with Top Logo -->
+  <div class="form-side">
+    <div class="login-container">
+      
+      <!-- Separate Logo Element -->
+      <div class="logo-container">
+        <img src="img/logo.png" alt="Automated Greenhouse Logo">
+      </div>
+
+      <div class="login-box">
+        <h2>ADMIN LOGIN</h2>
+        <p class="subtitle">Please enter your credentials below to access the administrative dashboard:</p>
+        
+        <div class="input-group">
+          <input type="email" id="email" placeholder="EMAIL">
+        </div>
+        
+        <div class="input-group">
+          <input type="password" id="password" placeholder="PASSWORD">
+        </div>
+        
+        <button id="loginBtn">LOGIN</button>
+        
+        <div class="error" id="error"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
