@@ -29,7 +29,7 @@ if (loginBtn) {
         db.collection("admins").doc(uid).get()
           .then(docSnap => {
             if (docSnap.exists) {
-              window.location.href = "dashboard.html";
+              window.location.href = "index.html";
             } else {
               auth.signOut();
               errorDiv.innerText = "Access denied: Not an admin";
@@ -55,13 +55,13 @@ if (logoutBtn) {
 auth.onAuthStateChanged(user => {
   if (user) {
     if (currentPage === "login.html" || currentPage === "") {
-      window.location.href = "dashboard.html";
+      window.location.href = "index.html";
     } else {
       loadDashboard(); 
       loadUsers();
     }
   } else {
-    if (currentPage === "dashboard.html") {
+    if (currentPage === "index.html") {
       window.location.href = "login.html";
     }
   }
