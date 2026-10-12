@@ -52,18 +52,27 @@ if (logoutBtn) {
 }
 
 // AUTH STATE ROUTING
-// AUTH STATE ROUTING
 auth.onAuthStateChanged(user => {
   if (user) {
-    // If logged in, redirect away from the login page to index.html
-    if (currentPage === "login.html" || currentPage === "") {
-      window.location.href = "index.html";
-    } else {
-      loadDashboard(); 
-      loadUsers();
-    }
+    db.collection("admins").doc(user.uid).get().then(docSnap => {
+      if (docSnap.exists) {
+        if (currentPage === "login.html" || currentPage === "") {
+          window.location.href = "index.html";
+        } else {
+          // --- VERIFIED ADMIN: REVEAL THE DASHBOARD ---
+          document.getElementById("appBody").style.display = "block";
+          loadDashboard(); 
+          loadUsers();
+        }
+      } else {
+        auth.signOut().then(() => {
+          window.location.href = "login.html";
+        });
+      }
+    }).catch(err => {
+      console.error("Error verifying admin state:", err);
+    });
   } else {
-    // If NOT logged in and trying to access index.html or root, bounce them to login
     if (currentPage === "index.html" || currentPage === "" || currentPage === "/") {
       window.location.href = "login.html";
     }
