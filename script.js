@@ -52,8 +52,10 @@ if (logoutBtn) {
 }
 
 // AUTH STATE ROUTING
+// AUTH STATE ROUTING
 auth.onAuthStateChanged(user => {
   if (user) {
+    // If logged in, redirect away from the login page to index.html
     if (currentPage === "login.html" || currentPage === "") {
       window.location.href = "index.html";
     } else {
@@ -61,7 +63,8 @@ auth.onAuthStateChanged(user => {
       loadUsers();
     }
   } else {
-    if (currentPage === "index.html") {
+    // If NOT logged in and trying to access index.html or root, bounce them to login
+    if (currentPage === "index.html" || currentPage === "" || currentPage === "/") {
       window.location.href = "login.html";
     }
   }
