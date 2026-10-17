@@ -583,20 +583,29 @@ async function viewDevice(deviceId) {
 
     const device = docSnap.data();
 
+    // Shows 0 correctly; only null/undefined become "-"
+    const fmt = (v, unit) => (v !== null && v !== undefined) ? `${v} ${unit}` : "-";
+
+    // Averages ignore missing readings AND 0 (treated as "no reading yet").
+    // If 0 can be a real reading for you, remove `&& v !== 0`.
+    const validReading = v => v !== null && v !== undefined && v !== 0;
+    const average = values => {
+      const valid = values.filter(validReading);
+      return valid.length ? (valid.reduce((a, b) => a + b, 0) / valid.length).toFixed(1) : null;
+    };
+
     if (modal) modal.style.display = "flex";
     if (modalDeviceName) modalDeviceName.innerText = getDeviceDisplayName(deviceId);
 
-    const temps = [device.hydroponics?.temp, device.soilArea1?.temp, device.soilArea2?.temp].filter(v => v !== null && v !== undefined);
-    const avgTemp = temps.length ? (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1) : (device.temp || "-");
-
-    const hums = [device.hydroponics?.humidity, device.soilArea1?.humidity, device.soilArea2?.humidity].filter(v => v !== null && v !== undefined);
-    const avgHumidity = hums.length ? (hums.reduce((a, b) => a + b, 0) / hums.length).toFixed(1) : (device.humidity || "-");
+    const avgTemp = average([device.hydroponics?.temp, device.soilArea1?.temp, device.soilArea2?.temp])
+      ?? (device.temp != null ? String(device.temp) : "-");
+    const avgHumidity = average([device.hydroponics?.humidity, device.soilArea1?.humidity, device.soilArea2?.humidity])
+      ?? (device.humidity != null ? String(device.humidity) : "-");
 
     const currentTemp = parseFloat(avgTemp) || 0;
     const shouldFanBeOn = currentTemp >= 25;
     const isPaired = device.paired || false;
-    
-    // Pest risk calculation or retrieval (defaults to 'low' if not provided)
+
     const pestRisk = (device.pestRisk || "low").toLowerCase();
     const isHighPestRisk = pestRisk === "high";
 
@@ -616,24 +625,24 @@ async function viewDevice(deviceId) {
 
     if (modalBody) {
       modalBody.innerHTML = `
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 p-4 rounded-2xl flex items-center gap-4 shadow-md">
-            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white font-bold text-xl backdrop-blur-xs">🌡️</div>
-            <div>
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+          <div class="col-span-2 md:col-span-3 bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 p-4 rounded-2xl flex items-center gap-4 shadow-md">
+            <div class="w-10 h-10 shrink-0 rounded-xl bg-white/10 flex items-center justify-center text-white font-bold text-xl">🌡️</div>
+            <div class="min-w-0">
               <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-100 block">Temperature</span>
               <span class="text-2xl font-black text-white">${avgTemp !== "-" ? avgTemp + '<span class="text-sm font-semibold text-emerald-200 ml-0.5">°C</span>' : '-'}</span>
             </div>
           </div>
 
-          <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 p-4 rounded-2xl flex items-center gap-4 shadow-md">
-            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white font-bold text-xl backdrop-blur-xs">💧</div>
-            <div>
+          <div class="col-span-2 md:col-span-3 bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 p-4 rounded-2xl flex items-center gap-4 shadow-md">
+            <div class="w-10 h-10 shrink-0 rounded-xl bg-white/10 flex items-center justify-center text-white font-bold text-xl">💧</div>
+            <div class="min-w-0">
               <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-100 block">Humidity</span>
               <span class="text-2xl font-black text-white">${avgHumidity !== "-" ? avgHumidity + '<span class="text-sm font-semibold text-emerald-200 ml-0.5">%</span>' : '-'}</span>
             </div>
           </div>
 
-          <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 p-4 rounded-2xl flex items-center justify-between shadow-md">
+          <div class="col-span-2 bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 p-4 rounded-2xl flex items-center justify-between shadow-md">
             <div>
               <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-100 block">Fan Status</span>
               <span class="text-xs font-bold text-white mt-0.5 block">${shouldFanBeOn ? 'ACTIVE' : 'INACTIVE'}</span>
@@ -641,7 +650,7 @@ async function viewDevice(deviceId) {
             <span class="w-4 h-4 rounded-full ${shouldFanBeOn ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-rose-500 shadow-lg shadow-rose-500/50'} inline-block"></span>
           </div>
 
-          <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 p-4 rounded-2xl flex items-center justify-between shadow-md">
+          <div class="col-span-2 bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 p-4 rounded-2xl flex items-center justify-between shadow-md">
             <div>
               <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-100 block">Device State</span>
               <span class="text-xs font-bold text-white mt-0.5 block">${isPaired ? 'PAIRED' : 'UNPAIRED'}</span>
@@ -649,7 +658,7 @@ async function viewDevice(deviceId) {
             <span class="w-4 h-4 rounded-full ${isPaired ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-rose-500 shadow-lg shadow-rose-500/50'} inline-block"></span>
           </div>
 
-          <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 p-4 rounded-2xl flex items-center justify-between shadow-md">
+          <div class="col-span-2 bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 p-4 rounded-2xl flex items-center justify-between shadow-md">
             <div>
               <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-100 block">Pest Risk</span>
               <span class="text-xs font-bold text-white mt-0.5 block">${pestRisk.toUpperCase()}</span>
@@ -658,7 +667,7 @@ async function viewDevice(deviceId) {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2 items-start">
           <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 p-5 rounded-2xl shadow-md flex flex-col">
             <div class="flex items-center gap-2 mb-4">
               <span class="w-2 h-2 rounded-full bg-white shadow-sm"></span>
@@ -667,11 +676,11 @@ async function viewDevice(deviceId) {
             <div class="grid grid-cols-2 gap-3">
               <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center flex flex-col justify-center">
                 <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide">Temperature</span>
-                <span class="text-sm font-bold text-gray-800 mt-1">${device.hydroponics?.temp ? device.hydroponics.temp + ' °C' : '-'}</span>
+                <span class="text-sm font-bold text-gray-800 mt-1">${fmt(device.hydroponics?.temp, '°C')}</span>
               </div>
               <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center flex flex-col justify-center">
                 <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide">Humidity</span>
-                <span class="text-sm font-bold text-gray-800 mt-1">${device.hydroponics?.humidity ? device.hydroponics.humidity + ' %' : '-'}</span>
+                <span class="text-sm font-bold text-gray-800 mt-1">${fmt(device.hydroponics?.humidity, '%')}</span>
               </div>
             </div>
           </div>
@@ -684,20 +693,20 @@ async function viewDevice(deviceId) {
             <div class="grid grid-cols-2 gap-3">
               <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center">
                 <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Temperature</span>
-                <span class="text-sm font-bold text-gray-800">${device.soilArea1?.temp ? device.soilArea1.temp + ' °C' : '-'}</span>
+                <span class="text-sm font-bold text-gray-800">${fmt(device.soilArea1?.temp, '°C')}</span>
               </div>
               <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center">
                 <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Humidity</span>
-                <span class="text-sm font-bold text-gray-800">${device.soilArea1?.humidity ? device.soilArea1.humidity + ' %' : '-'}</span>
+                <span class="text-sm font-bold text-gray-800">${fmt(device.soilArea1?.humidity, '%')}</span>
               </div>
               <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center flex flex-col items-center justify-center">
                 <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide mb-1.5">Light</span>
                 <div class="w-5 h-5 rounded-full ${device.soilArea1?.lightOn ? 'bg-emerald-500 shadow-md shadow-emerald-500/30' : 'bg-rose-500 shadow-md shadow-rose-500/30'}"></div>
               </div>
               <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center">
-  <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Soil Moisture</span>
-  <span class="text-sm font-bold text-gray-800">${device.soilArea1?.soilMoisture != null ? device.soilArea1.soilMoisture + ' %' : '-'}</span>
-</div>
+                <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Soil Moisture</span>
+                <span class="text-sm font-bold text-gray-800">${fmt(device.soilArea1?.soilMoisture, '%')}</span>
+              </div>
             </div>
           </div>
 
@@ -709,20 +718,20 @@ async function viewDevice(deviceId) {
             <div class="grid grid-cols-2 gap-3">
               <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center">
                 <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Temperature</span>
-                <span class="text-sm font-bold text-gray-800">${device.soilArea2?.temp ? device.soilArea2.temp + ' °C' : '-'}</span>
+                <span class="text-sm font-bold text-gray-800">${fmt(device.soilArea2?.temp, '°C')}</span>
               </div>
               <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center">
                 <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Humidity</span>
-                <span class="text-sm font-bold text-gray-800">${device.soilArea2?.humidity ? device.soilArea2.humidity + ' %' : '-'}</span>
+                <span class="text-sm font-bold text-gray-800">${fmt(device.soilArea2?.humidity, '%')}</span>
               </div>
               <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center flex flex-col items-center justify-center">
                 <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide mb-1.5">Light</span>
                 <div class="w-5 h-5 rounded-full ${device.soilArea2?.lightOn ? 'bg-emerald-500 shadow-md shadow-emerald-500/30' : 'bg-rose-500 shadow-md shadow-rose-500/30'}"></div>
               </div>
               <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center">
-  <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Soil Moisture</span>
-  <span class="text-sm font-bold text-gray-800">${device.soilArea2?.soilMoisture != null ? device.soilArea2.soilMoisture + ' %' : '-'}</span>
-</div>
+                <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Soil Moisture</span>
+                <span class="text-sm font-bold text-gray-800">${fmt(device.soilArea2?.soilMoisture, '%')}</span>
+              </div>
             </div>
           </div>
         </div>
