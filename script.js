@@ -586,9 +586,8 @@ async function viewDevice(deviceId) {
     // Shows 0 correctly; only null/undefined become "-"
     const fmt = (v, unit) => (v !== null && v !== undefined) ? `${v} ${unit}` : "-";
 
-    // Averages ignore missing readings AND 0 (treated as "no reading yet").
-    // If 0 can be a real reading for you, remove `&& v !== 0`.
-    const validReading = v => v !== null && v !== undefined && v !== 0;
+    // Averages ignore only missing readings (null/undefined); 0 counts as a real reading.
+    const validReading = v => v !== null && v !== undefined;
     const average = values => {
       const valid = values.filter(validReading);
       return valid.length ? (valid.reduce((a, b) => a + b, 0) / valid.length).toFixed(1) : null;
