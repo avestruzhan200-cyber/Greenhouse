@@ -602,7 +602,7 @@ async function viewDevice(deviceId) {
       ?? (device.humidity != null ? String(device.humidity) : "-");
 
     const currentTemp = parseFloat(avgTemp) || 0;
-    const shouldFanBeOn = currentTemp >= 33;
+    const shouldFanBeOn = currentTemp >= 30;
     const isPaired = device.paired || false;
 
     const pestRisk = (device.pestRisk || "low").toLowerCase();
