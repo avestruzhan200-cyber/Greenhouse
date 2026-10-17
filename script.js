@@ -694,10 +694,10 @@ async function viewDevice(deviceId) {
                 <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide mb-1.5">Light</span>
                 <div class="w-5 h-5 rounded-full ${device.soilArea1?.lightOn ? 'bg-emerald-500 shadow-md shadow-emerald-500/30' : 'bg-rose-500 shadow-md shadow-rose-500/30'}"></div>
               </div>
-              <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center flex flex-col items-center justify-center">
-                <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide mb-1.5">Watering</span>
-                <div class="w-5 h-5 rounded-full ${device.soilArea1?.fanOn ? 'bg-emerald-500 shadow-md shadow-emerald-500/30' : 'bg-rose-500 shadow-md shadow-rose-500/30'}"></div>
-              </div>
+              <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center">
+  <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Soil Moisture</span>
+  <span class="text-sm font-bold text-gray-800">${device.soilArea1?.soilMoisture != null ? device.soilArea1.soilMoisture + ' %' : '-'}</span>
+</div>
             </div>
           </div>
 
@@ -719,10 +719,10 @@ async function viewDevice(deviceId) {
                 <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide mb-1.5">Light</span>
                 <div class="w-5 h-5 rounded-full ${device.soilArea2?.lightOn ? 'bg-emerald-500 shadow-md shadow-emerald-500/30' : 'bg-rose-500 shadow-md shadow-rose-500/30'}"></div>
               </div>
-              <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center flex flex-col items-center justify-center">
-                <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide mb-1.5">Watering</span>
-                <div class="w-5 h-5 rounded-full ${device.soilArea2?.fanOn ? 'bg-emerald-500 shadow-md shadow-emerald-500/30' : 'bg-rose-500 shadow-md shadow-rose-500/30'}"></div>
-              </div>
+              <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs text-center">
+  <span class="text-[9px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Soil Moisture</span>
+  <span class="text-sm font-bold text-gray-800">${device.soilArea2?.soilMoisture != null ? device.soilArea2.soilMoisture + ' %' : '-'}</span>
+</div>
             </div>
           </div>
         </div>
