@@ -14,29 +14,117 @@ const db = firebase.firestore();
 // PAGE LOCATION HANDLING
 const currentPage = window.location.pathname.split("/").pop();
 
-// LOGIN
+ // LOGIN
 const loginBtn = document.getElementById("loginBtn");
-if (loginBtn) {
-  loginBtn.addEventListener("click", () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const errorDiv = document.getElementById("error");
-    if (!email || !password) { errorDiv.innerText = "All fields required"; return; }
 
-    auth.signInWithEmailAndPassword(email, password)
-      .then(cred => {
-        const uid = cred.user.uid;
-        db.collection("admins").doc(uid).get()
-          .then(docSnap => {
-            if (docSnap.exists) {
-              window.location.href = "index.html";
-            } else {
-              auth.signOut();
-              errorDiv.innerText = "Access denied: Not an admin";
-            }
-          });
-      }).catch(err => errorDiv.innerText = "Login failed: " + err.message);
+if (loginBtn) {
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const errorDiv = document.getElementById("error");
+
+  function showError(message) {
+    errorDiv.textContent = message;
+    errorDiv.classList.add("show");
+  }
+
+  function clearError() {
+    errorDiv.textContent = "";
+    errorDiv.classList.remove("show");
+  }
+
+  function getErrorMessage(error) {
+    switch (error.code) {
+      case "auth/invalid-email":
+        return "Please enter a valid email address.";
+
+      case "auth/invalid-credential":
+      case "auth/wrong-password":
+      case "auth/user-not-found":
+        return "Invalid email or password. Please try again.";
+
+      case "auth/too-many-requests":
+        return "Too many login attempts. Please try again later.";
+
+      case "auth/network-request-failed":
+        return "Connection failed. Please check your internet connection.";
+
+      case "auth/user-disabled":
+        return "This account has been disabled. Please contact support.";
+
+      case "permission-denied":
+        return "Unable to verify administrator access. Please contact support.";
+
+      default:
+        return "Login failed. Please try again later.";
+    }
+  }
+
+  loginBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    clearError();
+
+    if (!email && !password) {
+      showError("Please enter your email and password.");
+      return;
+    }
+
+    if (!email) {
+      showError("Please enter your email address.");
+      return;
+    }
+
+    if (!password) {
+      showError("Please enter your password.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError("Please enter a valid email address.");
+      return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "LOGGING IN...";
+
+    try {
+      const cred = await auth.signInWithEmailAndPassword(
+        email,
+        password
+      );
+
+      const uid = cred.user.uid;
+
+      const docSnap = await db.collection("admins")
+        .doc(uid)
+        .get();
+
+      if (docSnap.exists) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      await auth.signOut();
+      showError("Access denied. Administrator account required.");
+
+    } catch (error) {
+      console.error("Login error code:", error.code);
+
+      if (auth.currentUser) {
+        await auth.signOut().catch(() => {});
+      }
+
+      showError(getErrorMessage(error));
+
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = "LOGIN";
+    }
   });
+
+  emailInput.addEventListener("input", clearError);
+  passwordInput.addEventListener("input", clearError);
 }
 
 // LOGOUT
